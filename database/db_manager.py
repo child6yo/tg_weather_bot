@@ -1,9 +1,12 @@
 from sqlalchemy import String, BigInteger
 from asyncpg_lite import DatabaseManager
+from config_data.config import Config, load_config
+
+config: Config = load_config()
 
 db_manager = DatabaseManager(
-    db_url="postgresql://postgres:Yjcjhju123456@localhost:5432/postgres",
-    deletion_password="Yjcjhju123456",
+    db_url=config.database.source,
+    deletion_password=config.database.password,
 )
 
 

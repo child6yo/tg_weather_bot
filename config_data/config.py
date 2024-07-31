@@ -8,11 +8,24 @@ class TgBot:
 
 
 @dataclass
+class Postgres:
+    source: str
+    password: str
+
+
+@dataclass
 class Config:
     tg_bot: TgBot
+    database: Postgres
 
 
 def load_config(path: str | None = None) -> Config:
     env = Env()
     env.read_env(path)
-    return Config(tg_bot=TgBot(token=env('BOT_TOKEN')))
+    return Config(
+        tg_bot=TgBot(token=env("BOT_TOKEN")),
+        database=Postgres(
+            source=env("POSTGRES_SOURCE"),
+            password=env("POSTGRES_PASSWORD"),
+        ),
+    )
