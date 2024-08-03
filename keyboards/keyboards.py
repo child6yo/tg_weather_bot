@@ -1,8 +1,6 @@
 from aiogram.types import (
     ReplyKeyboardMarkup,
     KeyboardButton,
-    InlineKeyboardMarkup,
-    InlineKeyboardButton,
 )
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
 
@@ -10,7 +8,11 @@ main = ReplyKeyboardMarkup(
     keyboard=[
         [
             KeyboardButton(text="Какая сейчас погода?"),
+            KeyboardButton(text="Прогноз погоды"),
+        ],
+        [
             KeyboardButton(text="Определить местоположение", request_location=True),
+            KeyboardButton(text="Сменить город вручную"),
         ]
     ],
     resize_keyboard=True,

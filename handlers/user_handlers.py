@@ -1,12 +1,17 @@
 from aiogram import F, Router
 from aiogram.filters import CommandStart
-from aiogram.types import Message, ReplyKeyboardRemove, ContentType
+from aiogram.types import Message, ContentType
+from aiogram.fsm.state import StatesGroup, State
+from aiogram.fsm.context import  FSMContext
 from lexicon.lexicon_ru import LEXICON_RU
 from services.main_service import get_answer, get_city_from_loc
 from database import db_manager
 from keyboards import keyboards as kb
 
 router = Router()
+
+class UserData(StatesGroup):
+    city = State()
 
 
 # хэндлер на команду /start
@@ -32,6 +37,7 @@ async def cmd_start(message: Message):
         )
 
 
+# хендлер на кнопку/текст "какая сейчас погода?"
 @router.message(F.text.lower() == "какая сейчас погода?")
 async def show_weather(message: Message):
     user_info = await db_manager.get_user_data(user_id=message.from_user.id)
@@ -44,6 +50,26 @@ async def show_weather(message: Message):
     else:
         await message.answer(text=LEXICON_RU["ОШИБКА ГОРОДА"])
 
+@router.message(F.text.lower() == "сменить город вручную")
+async def change_user_city(message: Message, state: FSMContext):
+    await state.set_state(UserData.city)
+    await message.answer(text="Введите город")
+
+@router.message(UserData.city)
+async def changing_city(message: Message, state: FSMContext):
+    await state.update_data(name=message.text)
+    data = await state.get_data()
+    try:
+        await message.answer(text=f"Город изменен на {data["name"]}")
+        await db_manager.change_user_city(
+            user_id=message.from_user.id, city=data["name"]
+        )
+    except:
+        await message.answer(text=LEXICON_RU["ОШИБКА"])
+    await state.clear()
+
+
+# хендлер на геолокацию
 @router.message(F.content_type == ContentType.LOCATION)
 async def handle_location(message: Message):
     lat = message.location.latitude
@@ -52,19 +78,11 @@ async def handle_location(message: Message):
     reply = f"Город определен как {city}"
     try:
         await message.answer(reply)
-        await db_manager.change_user_city(
-        user_id=message.from_user.id, city=city
-    )
+        await db_manager.change_user_city(user_id=message.from_user.id, city=city)
     except:
         await message.answer(text=LEXICON_RU["ОШИБКА"])
 
-
-@router.message()
+# хендлер на весь остальной текст
+@router.message(F.content_type == ContentType.ANY)
 async def change_user_city_and_show_weather(message: Message):
-    try:
-        await message.answer(text=f"Город изменен на {message.text}")
-        await db_manager.change_user_city(
-            user_id=message.from_user.id, city=message.text
-        )
-    except:
-        await message.answer(text=LEXICON_RU["ОШИБКА"])
+    await message.answer(text=LEXICON_RU["ОСТАЛЬНОЕ"])
