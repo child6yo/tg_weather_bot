@@ -14,13 +14,13 @@ chat = GigaChat(
 )
 
 
-
 def answer(weather: Weather) -> str:
     city = weather.city
     temperature = weather.temperature
     weather_type = weather.weather_type
+    time = weather.is_day_or_night
     prompt = config.chat.prompt.format(
-        city=city, temperature=temperature, weather_type=weather_type
+        city=city, temperature=temperature, weather_type=weather_type, time=time
     )
     ans = chat([SystemMessage(content=prompt)])
     return ans.content
