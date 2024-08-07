@@ -4,7 +4,7 @@ from aiogram.types import Message, ContentType
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.context import  FSMContext
 from lexicon.lexicon_ru import LEXICON_RU
-from services.main_service import get_answer, get_city_from_loc
+from services.main_service import get_answer, get_city_from_loc, get_forecast_answer
 from database import db_manager
 from keyboards import keyboards as kb
 
@@ -13,6 +13,8 @@ router = Router()
 class UserData(StatesGroup):
     city = State()
 
+class Forecast(StatesGroup):
+    day = State()
 
 # хэндлер на команду /start
 @router.message(CommandStart())
@@ -44,16 +46,37 @@ async def show_weather(message: Message):
 
     if user_info["city"]:
         try:
-            await message.answer(text=get_answer(user_info["city"], reply_markup=kb.main))
+            await message.answer(text=get_answer(user_info["city"]), reply_markup=kb.main)
         except:
             await message.answer(text=LEXICON_RU["ОШИБКА"], reply_markup=kb.main)
     else:
         await message.answer(text=LEXICON_RU["ОШИБКА ГОРОДА"], reply_markup=kb.main)
 
 @router.message(F.text.lower() == "прогноз погоды")
-async def weather_forecast(message: Message):
-    await message.answer(text="ПОКА НЕ РЕЕАЛИЗОВАНО", reply_markup=kb.main)
+async def weather_forecast(message: Message, state: FSMContext):
+    user_info = await db_manager.get_user_data(user_id=message.from_user.id)
+    if user_info["city"]:
+        await state.set_state(Forecast.day)
+        await message.answer(text="Прогноз на какой день вас интересует?", reply_markup=kb.reply_forecast())
+    else:
+        await message.answer(text=LEXICON_RU["ОШИБКА ГОРОДА"], reply_markup=kb.main)
 
+@router.message(Forecast.day)
+async def forecast(message: Message, state: FSMContext):
+    await state.update_data(name=message.text)
+    data = await state.get_data()
+    user_info = await db_manager.get_user_data(user_id=message.from_user.id)
+    if data["name"].lower() == "завтра":
+        try:
+            await message.answer(text=get_forecast_answer(user_info["city"], 1), reply_markup=kb.main)
+        except:
+            await message.answer(text=LEXICON_RU["ОШИБКА"], reply_markup=kb.main)
+    elif data["name"].lower() == "послезавтра":
+        try:
+            await message.answer(text=get_forecast_answer(user_info["city"], 2), reply_markup=kb.main)
+        except:
+            await message.answer(text=LEXICON_RU["ОШИБКА"], reply_markup=kb.main)
+    await state.clear()
 
 @router.message(F.text.lower() == "сменить город вручную")
 async def change_user_city(message: Message, state: FSMContext):
@@ -72,7 +95,6 @@ async def changing_city(message: Message, state: FSMContext):
     except:
         await message.answer(text=LEXICON_RU["ОШИБКА"], reply_markup=kb.main)
     await state.clear()
-
 
 # хендлер на геолокацию
 @router.message(F.content_type == ContentType.LOCATION)

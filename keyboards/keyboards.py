@@ -19,22 +19,12 @@ main = ReplyKeyboardMarkup(
 )
 
 forecast = [
-    "1 час",
-    "2 часа",
-    "3 часа",
-    "4 часа",
-    "5 часов",
-    "6 часов",
-    "7 часов",
-    "8 часов",
-    "9 часов",
-    "10 часов",
-    "11 часов",
-    "12 часов"
+    "Завтра",
+    "Послезавтра",
 ]
 
-async def reply_forecast():
+def reply_forecast():
     keyboard = ReplyKeyboardBuilder()
-    for hour in forecast:
-        keyboard.add(KeyboardButton(text=hour))
-    return keyboard.adjust(8).as_markup()
+    for day in forecast:
+        keyboard.add(KeyboardButton(text=day))
+    return keyboard.adjust(2).as_markup()

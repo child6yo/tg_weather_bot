@@ -16,6 +16,17 @@ PROMPT_2 = """Твоя роль - русский бандит, настоящи�
         Температура: {temperature}
         Тип погоды: {weather_type}"""
 
+FPROMPT_1 = """Ты - русский аристократ начала 19 века и общаешься соответствующим образом.\n
+        Работаешь ты метеоролом и должен увлекательно рассказать прогноз погоды на определенный день.\n
+        Проанализируй данные и аристократично и в устаревшей манере речи, опиши погоду и дай к ней комментарий. \n
+        Кроме того, незабудь отобразить сами данные.\n
+        Данные на вход:
+        Прогноз на {day}.
+        Город: {city}
+        Максимальная температура: {max_temperature}
+        Минимальная температура: {min_temperature}
+        Тип погоды: {weather_type}"""
+
 from dataclasses import dataclass
 from environs import Env
 
@@ -24,6 +35,7 @@ from environs import Env
 class GigaChat:
     credentials: str
     prompt: str
+    forecast_prompt: str
 
 
 @dataclass
@@ -34,4 +46,4 @@ class Config:
 def load_config(path: str | None = None) -> Config:
     env = Env()
     env.read_env(path)
-    return Config(chat=GigaChat(credentials=env('GC_CREDINTIALS'), prompt=PROMPT_2))
+    return Config(chat=GigaChat(credentials=env('GC_CREDINTIALS'), prompt=PROMPT_1, forecast_prompt=FPROMPT_1))
