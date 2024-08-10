@@ -3,6 +3,11 @@ from environs import Env
 
 
 @dataclass
+class GigaChat:
+    credentials: str
+
+
+@dataclass
 class TgBot:
     token: str  # Токен для доступа к телеграм-боту
 
@@ -17,6 +22,7 @@ class Postgres:
 class Config:
     tg_bot: TgBot
     database: Postgres
+    chat: GigaChat
 
 
 def load_config(path: str | None = None) -> Config:
@@ -28,4 +34,5 @@ def load_config(path: str | None = None) -> Config:
             source=env("POSTGRES_SOURCE"),
             password=env("POSTGRES_PASSWORD"),
         ),
+        chat=GigaChat(credentials=env("GC_CREDINTIALS")),
     )

@@ -2,7 +2,6 @@ from aiogram.types import (
     ReplyKeyboardMarkup,
     KeyboardButton,
 )
-from aiogram.utils.keyboard import ReplyKeyboardBuilder
 
 main = ReplyKeyboardMarkup(
     keyboard=[
@@ -13,18 +12,30 @@ main = ReplyKeyboardMarkup(
         [
             KeyboardButton(text="Определить местоположение", request_location=True),
             KeyboardButton(text="Сменить город вручную"),
+        ],
+        [
+            KeyboardButton(text="Сменить стиль ответов"),
+        ],
+    ],
+    resize_keyboard=True,
+)
+
+forecast = ReplyKeyboardMarkup(
+    keyboard=[
+        [
+            KeyboardButton(text="Завтра"),
+            KeyboardButton(text="Послезавтра"),
         ]
     ],
     resize_keyboard=True,
 )
 
-forecast = [
-    "Завтра",
-    "Послезавтра",
-]
-
-def reply_forecast():
-    keyboard = ReplyKeyboardBuilder()
-    for day in forecast:
-        keyboard.add(KeyboardButton(text=day))
-    return keyboard.adjust(2).as_markup()
+chatstyle = ReplyKeyboardMarkup(
+    keyboard=[
+        [
+            KeyboardButton(text="Русский аристократ (по умолчанию)"),
+            KeyboardButton(text="Вор в законе"),
+        ]
+    ],
+    resize_keyboard=True
+)
